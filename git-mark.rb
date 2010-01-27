@@ -116,7 +116,7 @@ if opts[:list].empty?
   opts[:add].each do |add|
     add = add.split(/\s*,\s*/)
     show.each do |ref|
-      refs[ref][1].concat(add)
+      refs[ref][1] = (refs[ref][1] + add).uniq
     end
   end
 
