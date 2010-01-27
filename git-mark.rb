@@ -3,15 +3,17 @@
 # todo:
 # - options:
 #   - do not re-write file
-# - coloration
 # - better cli:
 #   - 'git mark (add)? rebasing to features/users/132'
 #   - 'git mark del rebasing to features/users/132'
 #   - 'git mark del rebasing' => 'to *'
 #   - 'git mark (show)? master'
 #   - 'git mark list rebasing'
-# - structure:
-#   - 'git mark list < rebasing' (assuming 'rebasing' is a know and comparable state)
+# - base of known marks:
+#   - coloration
+#   - priority:
+#     - 'git mark list > merging'
+#     - sort by priority
 
 def next_arg(arg, args)
   arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
