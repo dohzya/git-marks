@@ -13,6 +13,10 @@
 # - structure:
 #   - 'git mark list < rebasing' (assuming 'rebasing' is a know and comparable state)
 
+def next_arg(arg, args)
+  arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
+end
+
 opts = {
   :patterns => [],
   :excludes => ['refs/remotes/'],
@@ -25,7 +29,7 @@ args = ARGV.dup
 while arg = args.shift
   case arg
   when /^--marks-file/
-    opts[:file] = arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
+    opts[:file] = next_arg(arg, args)
 
   when /^-r|--remote$/
     opts[:excludes].delete('refs/remotes/')
@@ -37,17 +41,17 @@ while arg = args.shift
     opts[:excludes].delete('refs/heads/')
     opts[:excludes].delete('refs/remotes/')
   when /^-e|--exclude/
-    opts[:excludes] = arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
+    opts[:excludes] << next_arg(arg, args)
 
   when /^-l|--list/
-    opts[:list] << (arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift)
+    opts[:list] << next_arg(arg, args)
   when /^-el|--exclude-list/
-    opts[:exclude_list] << (arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift)
+    opts[:exclude_list] << next_arg(arg, args)
 
   when /^-m|--message/
-    opts[:add] << (arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift)
+    opts[:add] << next_arg(arg, args)
   when /^-d|--delete/
-    opts[:delete] << (arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift)
+    opts[:delete] << next_arg(arg, args)
 
   when '--'
     opts[:patterns].concat(args)
