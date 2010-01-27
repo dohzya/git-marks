@@ -111,21 +111,6 @@ if opts[:list].empty?
       ref
     end
   end
-  show.compact!
-
-  opts[:add].each do |add|
-    add = add.split(/\s*,\s*/)
-    show.each do |ref|
-      refs[ref][1] = (refs[ref][1] + add).uniq
-    end
-  end
-
-  opts[:delete].each do |delete|
-    delete = delete.split(/\s*,\s*/)
-    show.each do |ref|
-      delete.each{|d| refs[ref][1].delete(d) }
-    end
-  end
 else
   opts[:list].map!{|p| glob_to_reg(p) }
   opts[:exclude_list].map!{|p| glob_to_reg(p) }
@@ -138,8 +123,23 @@ else
     else
     end
   end
-  show.compact!
 end
+show.compact!
+
+opts[:add].each do |add|
+  add = add.split(/\s*,\s*/)
+  show.each do |ref|
+    refs[ref][1] = (refs[ref][1] + add).uniq
+  end
+end
+
+opts[:delete].each do |delete|
+  delete = delete.split(/\s*,\s*/)
+  show.each do |ref|
+    delete.each{|d| refs[ref][1].delete(d) }
+  end
+end
+
 show.map! do |ref|
   [ref, ref.sub(%r[^refs/(heads/|remotes/)?],'')]
 end
