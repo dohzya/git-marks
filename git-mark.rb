@@ -39,6 +39,8 @@ while arg = args.shift
   when /^--marks-file/
     opts[:file] = next_arg(arg, args)
 
+  when /^-h|--heads$/
+    opts[:selects] << 'refs/heads'
   when /^-r|--remote$/
     opts[:selects] << 'refs/remotes/'
   when /^-A|--All$/
