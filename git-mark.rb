@@ -29,7 +29,7 @@ end
 opts = {
   :patterns => [],
   :selects => [],
-  :excludes => ['refs/remotes/'],
+  :excludes => [],
   :only => [],
   :add => [],
   :delete => [],
@@ -43,7 +43,7 @@ while arg = args.shift
     opts[:file] = next_arg(arg, args)
 
   when /^-h|--heads$/
-    opts[:selects] << 'refs/heads'
+    opts[:selects] << 'refs/heads/'
   when /^-r|--remote$/
     opts[:selects] << 'refs/remotes/'
   when /^-A|--All$/
