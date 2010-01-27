@@ -89,7 +89,7 @@ if File.exists? opts[:file]
     file.each_line do |line|
       line.sub!(/\n?\r?$/,'')
       ref, marks = line.match(/([^ ]+) (.*)/).captures
-      marks = marks.split(/\s*,\s*/)
+      marks = marks.split(/\s*,\s*/).sort
       if refs.include? ref
         refs[ref][1] = [*marks]
       end
