@@ -98,6 +98,7 @@ if File.exists? opts[:file]
 end
 
 if opts[:list].empty?
+  opts[:patterns] << '*' if opts[:patterns].empty?
   opts[:patterns].map!{|p| glob_to_reg(p) }
   opts[:excludes].map!{|p| glob_to_reg(p) }
   show.map! do |ref|
