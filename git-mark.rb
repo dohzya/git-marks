@@ -28,6 +28,7 @@ opts = {
   :patterns => [],
   :selects => [],
   :excludes => ['refs/remotes/'],
+  :only => [],
   :add => [],
   :delete => [],
   :list => [],
@@ -49,6 +50,8 @@ while arg = args.shift
     opts[:selects] << '*'
   when /^-e|--exclude/
     opts[:excludes] << next_arg(arg, args)
+  when /^-o|--only/
+    opts[:only] << next_arg(arg, args)
 
   when /^-l|--list/
     opts[:list] << next_arg(arg, args)
@@ -100,6 +103,7 @@ if opts[:list].empty?
   show.map! do |ref|
     case
     when opts[:excludes].any?{|p| ref =~ p }
+    when !opts[:only].all?{|p| ref =~ p }
     when opts[:patterns].any?{|p| ref =~ p }
       ref
     end
