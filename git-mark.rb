@@ -17,6 +17,13 @@ def next_arg(arg, args)
   arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
 end
 
+def glob_to_reg(glob)
+  reg = glob.dup
+  reg.gsub!(/[*]/, '.*')
+  reg.gsub!(/[?]/, '.')
+  Regexp.new(reg)
+end
+
 opts = {
   :patterns => [],
   :excludes => ['refs/remotes/'],
@@ -85,8 +92,8 @@ end
 
 show = []
 if opts[:list].empty?
-  opts[:patterns].map!{|p| /^#{p.sub(/[*]/,'.*').sub(/[?]/,'.')}$/ }
-  opts[:excludes].map!{|p| /^#{p.sub(/[*]/,'.*').sub(/[?]/,'.')}$/ }
+  opts[:patterns].map!{|p| glob_to_reg(p) }
+  opts[:excludes].map!{|p| glob_to_reg(p) }
   refs.each do |ref, (hash,marks)|
     case
     when opts[:excludes].any?{|p| ref =~ p }
@@ -113,8 +120,8 @@ if opts[:list].empty?
     end
   end
 else
-  opts[:list] = opts[:list].map{|l| /^#{l.sub(/[*]/,'.*').sub(/[?]/,'.').sub(/,/,'|')}$/ }
-  opts[:exclude_list] = opts[:exclude_list].map{|l| /#{l.sub(/[*]/,'.*').sub(/[?]/,'.').sub(/,/,'|')}$/ }
+  opts[:list].map!{|p| glob_to_reg(p) }
+  opts[:exclude_list].map!{|p| glob_to_reg(p) }
   refs.each do |ref, (hash,marks)|
     case
     when opts[:exclude_list].any?{|p| marks.any?{|m| m =~ p } }
