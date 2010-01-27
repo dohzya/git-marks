@@ -140,9 +140,8 @@ else
   end
   show.compact!
 end
-show = show.inject({}) do |res, ref|
-  res[ref] = ref.sub(%r[^refs/(heads/|remotes/)?],'')
-  res
+show.map! do |ref|
+  [ref, ref.sub(%r[^refs/(heads/|remotes/)?],'')]
 end
 
 max = show.map{|r,s| s.length}.max || 0
