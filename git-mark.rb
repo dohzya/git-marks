@@ -54,12 +54,12 @@ while arg = args.shift
   when /^-o|--only/
     opts[:only] << next_arg(arg, args)
 
-  when /^-l|--list/
+  when /^-l|--list/,'list'
     opts[:list] << next_arg(arg, args)
 
-  when /^-m|--message/
+  when 'add'
     opts[:add] << next_arg(arg, args)
-  when /^-d|--delete/
+  when 'delete','del','rm'
     opts[:delete] << next_arg(arg, args)
 
   when '--'
