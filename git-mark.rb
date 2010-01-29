@@ -34,7 +34,6 @@ opts = {
   :add => [],
   :delete => [],
   :list => [],
-  :exclude_list => [],
 }
 args = ARGV.dup
 while arg = args.shift
@@ -57,8 +56,6 @@ while arg = args.shift
 
   when /^-l|--list/
     opts[:list] << next_arg(arg, args)
-  when /^-el|--exclude-list/
-    opts[:exclude_list] << next_arg(arg, args)
 
   when /^-m|--message/
     opts[:add] << next_arg(arg, args)
@@ -113,11 +110,11 @@ if opts[:list].empty?
   end
 else
   opts[:list].map!{|p| glob_to_reg(p) }
-  opts[:exclude_list].map!{|p| glob_to_reg(p) }
+  opts[:excludes].map!{|p| glob_to_reg(p) }
   show.map! do |ref|
     head, marks = refs[ref]
     case
-    when opts[:exclude_list].any?{|p| marks.any?{|m| m =~ p } }
+    when opts[:excludes].any?{|p| marks.any?{|m| m =~ p } }
     when opts[:list].any?{|p| marks.any?{|m| m =~ p } }
       ref
     else
