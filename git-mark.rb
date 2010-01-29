@@ -198,7 +198,7 @@ show.each do |ref, short_ref|
       mark
     end
   end
-  _max = short_ref =~ /(?:(\e\[\d*m).*)+/ ? max+9 : max # TODO should count the *real* number of non-shown chars
+  _max = short_ref.scan(/\e\[\d*m/).join.length+max
   to_puts = "%-#{_max}s %s %s" % [short_ref, hash, marks.join(', ')]
   puts to_puts
 end
