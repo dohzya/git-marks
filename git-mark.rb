@@ -1,5 +1,18 @@
 #!/usr/bin/env ruby
 
+begin
+  require 'yaml'
+  require 'term/ansicolor'
+  class String
+    include Term::ANSIColor
+    #  be careful with that
+    def method_missing(meth,*args)
+      self
+    end
+  end
+rescue
+end
+
 # todo:
 # - options:
 #   - do not re-write file
@@ -39,7 +52,9 @@ args = ARGV.dup
 while arg = args.shift
   case arg
   when /^--marks-file/
-    opts[:file] = next_arg(arg, args)
+    opts[:marks_file] = next_arg(arg, args)
+  when /^--config-file$/
+    opts[:config_file] = next_arg(arg, args)
 
   when /^-h|--heads$/
     opts[:selects] << 'refs/heads/'
@@ -70,21 +85,24 @@ while arg = args.shift
   end
 end
 
-opts[:file] ||= ENV['GIT_MARKS_FILE'] || %x(git config --get marks.file || echo $(git rev-parse --git-dir)/marks)
-opts[:file].sub!(/\r?\n?$/,'')
+opts[:marks_file] ||= ENV['GIT_MARKS_FILE'] || %x(git config --get marks.file || echo $(git rev-parse --git-dir)/marks)
+opts[:marks_file].sub!(/\r?\n?$/,'')
+
+opts[:config_file] ||= ENV['GIT_MARKS_CONFIG_FILE'] || %x(git config --get marks.configfile || echo $(git rev-parse --git-dir)/info/marks)
+opts[:config_file].sub!(/\r?\n?$/,'')
 
 opts[:selects] << 'refs/heads/' if opts[:selects].empty?
-opts[:selects].map!{|p| glob_to_reg(p) }
+opts[:selects].map!{|ptn| glob_to_reg(ptn) }
 refs = {}
 show = []
 %x(git show-ref --abbrev).each_line do |line|
   hash, ref = line.split(' ')
   refs[ref] = [hash, []]
-  show << ref if opts[:selects].any?{|p| ref =~ p }
+  show << ref if opts[:selects].any?{|ptn| ref =~ ptn }
 end
 
-if File.exists? opts[:file]
-  File.open(opts[:file]) do |file|
+if File.exists? opts[:marks_file]
+  File.open(opts[:marks_file]) do |file|
     file.each_line do |line|
       line.sub!(/\n?\r?$/,'')
       ref, marks = line.match(/([^ ]+) (.*)/).captures
@@ -96,26 +114,45 @@ if File.exists? opts[:file]
   end
 end
 
+if File.exists? opts[:config_file]
+  config = YAML.load_file(opts[:config_file])
+else
+  config = {}
+end
+%w(types marks colors).each{|n| config[n] ||= {} }
+%w(priority).each{|n| config[n] ||= [] }
+config['types'].each do |types|
+  types.each do |type, marks|
+    marks.each do |mark|
+      mark.each do |name, color|
+        config['marks'][name] = type
+        config['colors'][name] = color
+        config['priority'] << name unless config['priority'].include?(name)
+      end
+    end
+  end
+end
+
 if opts[:list].empty?
   opts[:patterns] << '*' if opts[:patterns].empty?
-  opts[:patterns].map!{|p| glob_to_reg(p) }
-  opts[:excludes].map!{|p| glob_to_reg(p) }
+  opts[:patterns].map!{|ptn| glob_to_reg(ptn) }
+  opts[:excludes].map!{|ptn| glob_to_reg(ptn) }
   show.map! do |ref|
     case
-    when opts[:excludes].any?{|p| ref =~ p }
-    when !opts[:only].all?{|p| ref =~ p }
-    when opts[:patterns].any?{|p| ref =~ p }
+    when opts[:excludes].any?{|ptn| ref =~ ptn }
+    when !opts[:only].all?{|ptn| ref =~ ptn }
+    when opts[:patterns].any?{|ptn| ref =~ ptn }
       ref
     end
   end
 else
-  opts[:list].map!{|p| glob_to_reg(p) }
-  opts[:excludes].map!{|p| glob_to_reg(p) }
+  opts[:list].map!{|ptn| glob_to_reg(ptn) }
+  opts[:excludes].map!{|ptn| glob_to_reg(ptn) }
   show.map! do |ref|
     head, marks = refs[ref]
     case
-    when opts[:excludes].any?{|p| marks.any?{|m| m =~ p } }
-    when opts[:list].any?{|p| marks.any?{|m| m =~ p } }
+    when opts[:excludes].any?{|ptn| marks.any?{|m| m =~ ptn } }
+    when opts[:list].any?{|ptn| marks.any?{|m| m =~ ptn } }
       ref
     else
     end
@@ -144,11 +181,24 @@ end
 max = show.map{|r,s| s.length}.max || 0
 max = 50 if max > 50
 show.each do |ref, short_ref|
-  hash, *marks = refs[ref]
-  puts("%-#{max}s %s %s" % [short_ref, hash, marks.join(', ')])
+  hash, marks = refs[ref]
+  marks = [*marks].map do |mark|
+    color = config['colors'][mark]
+    if color
+      if config['marks'][mark] == config['color-ref']
+        short_ref = short_ref.send(color)
+      end
+      mark.send(color)
+    else
+      mark
+    end
+  end
+  _max = short_ref =~ /(?:(\e\[\d*m).*)+/ ? max+9 : max # TODO should count the *real* number of non-shown chars
+  to_puts = "%-#{_max}s %s %s" % [short_ref, hash, marks.join(', ')]
+  puts to_puts
 end
 
-File.open(opts[:file], 'w') do |file|
+File.open(opts[:marks_file], 'w') do |file|
   file.puts refs.map{|r,(h,m)| "#{r} #{[*m].join(",")}" }.join("\n")
 end
 
