@@ -182,7 +182,12 @@ max = show.map{|r,s| s.length}.max || 0
 max = 50 if max > 50
 show.each do |ref, short_ref|
   hash, marks = refs[ref]
-  marks = [*marks].map do |mark|
+  marks = [*marks].dup
+  marks.sort! do |m1, m2|
+    i1, i2 = [m1,m2].map{|m| config['priority'].index(m) }
+    i1 && i2 ? i1 <=> i2 : (i1 ? -1 : (i2 ? 1 : m1 <=> m2))
+  end
+  marks.map! do |mark|
     color = config['colors'][mark]
     if color
       if config['marks'][mark] == config['color-ref']
