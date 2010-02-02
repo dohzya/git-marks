@@ -95,6 +95,7 @@ opts[:selects] << 'refs/heads/' if opts[:selects].empty?
 opts[:selects].map!{|ptn| glob_to_reg(ptn) }
 refs = {}
 show = []
+branch = %x(git branch).grep(/^[*]/).first.sub(/[*] ([^\s]+)\s.*/,'\1')
 %x(git show-ref --abbrev).each_line do |line|
   hash, ref = line.split(' ')
   refs[ref] = [hash, []]
@@ -181,6 +182,7 @@ end
 max = show.map{|r,s| s.length}.max || 0
 max = 50 if max > 50
 show.each do |ref, short_ref|
+  short_ref = short_ref.bold if short_ref == branch
   hash, marks = refs[ref]
   marks = [*marks].dup
   marks.sort! do |m1, m2|
