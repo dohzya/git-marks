@@ -56,6 +56,9 @@ while arg = args.shift
   when /^--config-file$/
     opts[:config_file] = next_arg(arg, args)
 
+  when /^-v|--verbose$/
+    opts[:verbose] = true
+
   when /^-h|--heads$/
     opts[:selects] << 'refs/heads/'
   when /^-r|--remote$/
@@ -201,7 +204,11 @@ show.each do |ref, short_ref|
     end
   end
   _max = short_ref.scan(/\e\[\d*m/).join.length+max
-  to_puts = "%-#{_max}s %s %s" % [short_ref, hash, marks.join(', ')]
+  if opts[:verbose]
+    to_puts = "%-#{_max}s %s %s" % [short_ref, hash, marks.join(', ')]
+  else
+    to_puts = "%-#{_max}s %s" % [short_ref, marks.join(', ')]
+  end
   puts to_puts
 end
 
