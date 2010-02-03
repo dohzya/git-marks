@@ -22,11 +22,8 @@ end
 #   - 'git mark del rebasing' => 'to *'
 #   - 'git mark (show)? master'
 #   - 'git mark list rebasing'
-# - base of known marks:
-#   - coloration
-#   - priority:
-#     - 'git mark list > merging'
-#     - sort by priority
+# - allow many files (/etc/marks, ~/.marks, .marks, .git/info/marks)
+# - list marks if no ref is found
 
 def next_arg(arg, args)
   arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
