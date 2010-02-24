@@ -35,6 +35,7 @@ def next_arg(arg, args)
 end
 
 def glob_to_reg(glob)
+  return nil unless glob
   reg = glob.dup
   reg.gsub!(/[*]/, '.*')
   reg.gsub!(/[?]/, '.')
