@@ -216,6 +216,6 @@ show.each do |ref, short_ref|
 end
 
 File.open(opts[:marks_file], 'w') do |file|
-  file.puts refs.map{|r,(h,m)| "#{r} #{[*m].join(",")}" }.join("\n")
+  file.puts refs.map{|r,(h,m)| "#{r} #{[*m].join(",")}" }.sort.join("\n")
 end
 
