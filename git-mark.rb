@@ -24,6 +24,11 @@ end
 #   - 'git mark list rebasing'
 # - allow many files (/etc/marks, ~/.marks, .marks, .git/info/marks)
 # - list marks if no ref is found
+# - simple access to HEAD
+# - limit pattern:
+#   - use string instead of regexp
+#   - exclude patterns
+#
 
 def next_arg(arg, args)
   arg =~ /=/ ? arg.sub(/.*=\s*/,'') : args.shift
